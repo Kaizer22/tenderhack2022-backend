@@ -1,0 +1,315 @@
+basePath: /api/v1
+definitions:
+  entity.AccountData:
+    properties:
+      login:
+        type: string
+      password:
+        type: string
+      role:
+        type: string
+    type: object
+  entity.StrategyParams:
+    properties:
+      acceptable_price:
+        type: number
+      minimal_price:
+        type: number
+      preferable_price:
+        type: number
+      quotation_session_id:
+        type: integer
+      strategy:
+        type: string
+      user_id:
+        type: integer
+    type: object
+  response.AccountCreated:
+    properties:
+      account_id:
+        type: integer
+      msg:
+        type: string
+      profile_id:
+        type: integer
+    type: object
+  response.HealthStatus:
+    properties:
+      info:
+        type: string
+      status:
+        type: string
+    type: object
+  response.LoginResponse:
+    properties:
+      access_token:
+        type: string
+      refresh_token:
+        type: string
+    type: object
+  utils.HTTPError:
+    properties:
+      code:
+        example: 500
+        type: integer
+      message:
+        example: Internal error
+        type: string
+    type: object
+host: localhost:8083
+info:
+  contact:
+    email: support@swagger.io
+    name: API Support
+    url: http://www.swagger.io/support
+  description: Service for async running of user strategies.
+  license:
+    name: Apache 2.0
+    url: http://www.apache.org/licenses/LICENSE-2.0.html
+  termsOfService: http://swagger.io/terms/
+  title: Strategy Management Service API
+  version: "1.0"
+paths:
+  /api/v1/strategies/{sessionId}/{userId}:
+    post:
+      consumes:
+      - application/json
+      description: Stops selected strategy
+      parameters:
+      - description: Authentication header
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      - description: Session ID param
+        in: path
+        name: sessionId
+        required: true
+        type: integer
+      - description: User ID param
+        in: path
+        name: userId
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Strategy stopped
+          schema:
+            type: string
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/utils.HTTPError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/utils.HTTPError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/utils.HTTPError'
+      summary: Stop user strategy
+      tags:
+      - strategies
+  /api/v1/strategies/run:
+    post:
+      consumes:
+      - application/json
+      description: Run selected strategy
+      parameters:
+      - description: Authentication header
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      - description: Strategy params
+        in: body
+        name: data
+        required: true
+        schema:
+          $ref: '#/definitions/entity.StrategyParams'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Strategy launched
+          schema:
+            type: string
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/utils.HTTPError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/utils.HTTPError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/utils.HTTPError'
+      summary: Run strategy
+      tags:
+      - strategies
+  /health:
+    get:
+      consumes:
+      - application/json
+      description: Health status for services' components
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/response.HealthStatus'
+            type: array
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/utils.HTTPError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/utils.HTTPError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/utils.HTTPError'
+      summary: Get health
+      tags:
+      - health
+  /health/version:
+    get:
+      consumes:
+      - application/json
+      description: Current version of the service
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: string
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/utils.HTTPError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/utils.HTTPError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/utils.HTTPError'
+      summary: Get version
+      tags:
+      - health
+  /login:
+    post:
+      consumes:
+      - application/json
+      description: Login request, use to get access_token and refresh_token
+      parameters:
+      - description: Account info
+        in: body
+        name: info
+        required: true
+        schema:
+          $ref: '#/definitions/entity.AccountData'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Login
+          schema:
+            $ref: '#/definitions/response.LoginResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/utils.HTTPError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/utils.HTTPError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/utils.HTTPError'
+      summary: Login
+      tags:
+      - auth
+  /logout:
+    post:
+      consumes:
+      - application/json
+      description: Log out from account
+      parameters:
+      - description: Authentication header
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Register
+          schema:
+            $ref: '#/definitions/response.AccountCreated'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/utils.HTTPError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/utils.HTTPError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/utils.HTTPError'
+      summary: Logout
+      tags:
+      - auth
+  /register:
+    post:
+      consumes:
+      - application/json
+      description: Add new account
+      parameters:
+      - description: Account info
+        in: body
+        name: info
+        required: true
+        schema:
+          $ref: '#/definitions/entity.AccountData'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Register
+          schema:
+            $ref: '#/definitions/response.AccountCreated'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/utils.HTTPError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/utils.HTTPError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/utils.HTTPError'
+      summary: Register
+      tags:
+      - auth
+securityDefinitions:
+  JWT:
+    type: basic
+swagger: "2.0"

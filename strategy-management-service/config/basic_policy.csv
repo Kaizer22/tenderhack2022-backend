@@ -1,0 +1,20 @@
+p, admin, category, read
+p, admin, category, insert
+p, admin, category, delete
+p, admin, category, update
+p, admin, session, read
+p, admin, session, update
+p, admin, session, delete
+p, admin, bet, read
+p, admin, bet, insert
+
+
+p, customer, session, read
+p, customer, session, insert
+p, customer, session, update
+p, customer, bet, read
+
+
+p, provider, session, read
+p, provider, bet, insert
+p, provider, bet, read

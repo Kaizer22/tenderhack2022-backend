@@ -1,0 +1,1042 @@
+definitions:
+  entity.AccountData:
+    properties:
+      login:
+        type: string
+      password:
+        type: string
+      role:
+        type: string
+    type: object
+  entity.Bet:
+    properties:
+      bet_number:
+        type: integer
+      bot:
+        type: boolean
+      id:
+        type: integer
+      new_price:
+        type: number
+      provider_id:
+        type: integer
+      quotation_session_id:
+        type: integer
+      time:
+        type: string
+    type: object
+  entity.BetData:
+    properties:
+      bot:
+        type: boolean
+      provider_id:
+        type: integer
+      quotation_session_id:
+        type: integer
+    type: object
+  entity.Category:
+    properties:
+      description:
+        example: Sofa, table, shelf e.g.
+        type: string
+      id:
+        example: 42
+        type: integer
+      name:
+        example: Furniture
+        type: string
+    type: object
+  entity.CategoryData:
+    properties:
+      description:
+        example: Sofa, table, shelf e.g.
+        type: string
+      name:
+        example: Furniture
+        type: string
+    type: object
+  entity.Product:
+    properties:
+      category:
+        $ref: '#/definitions/entity.Category'
+      category_id:
+        example: 3
+        type: integer
+      description:
+        example: Carbonated sweet drink
+        type: string
+      id:
+        example: 1
+        format: int64
+        type: integer
+      name:
+        example: Pepsi
+        type: string
+    type: object
+  entity.ProductData:
+    properties:
+      category_id:
+        example: 3
+        type: integer
+      description:
+        example: Carbonated sweet drink
+        type: string
+      name:
+        example: Pepsi
+        type: string
+    type: object
+  entity.ProductJournal:
+    properties:
+      count:
+        type: integer
+      product:
+        $ref: '#/definitions/entity.Product'
+      product_id:
+        type: integer
+      record_id:
+        type: integer
+      session_id:
+        type: integer
+    type: object
+  entity.ProductJournalData:
+    properties:
+      count:
+        type: integer
+      product_id:
+        type: integer
+    type: object
+  entity.Profile:
+    properties:
+      organizationId:
+        type: integer
+      organizationName:
+        type: string
+      organizationType:
+        type: string
+    type: object
+  entity.ProfileData:
+    properties:
+      organizationName:
+        type: string
+      organizationType:
+        type: string
+    type: object
+  entity.QuotationSession:
+    properties:
+      creator:
+        $ref: '#/definitions/entity.Profile'
+      creator_id:
+        type: integer
+      current_price:
+        type: number
+      id:
+        type: integer
+      is_in_additional_purchase:
+        type: boolean
+      last_bet:
+        $ref: '#/definitions/entity.Bet'
+      last_bet_id:
+        type: integer
+      name:
+        type: string
+      products:
+        items:
+          $ref: '#/definitions/entity.ProductJournal'
+        type: array
+      session_duration:
+        description: Duration in minutes
+        type: integer
+      session_step_percent:
+        type: number
+      start_price:
+        type: number
+      start_time:
+        type: string
+      status:
+        type: string
+    type: object
+  entity.QuotationSessionData:
+    properties:
+      creator_id:
+        type: integer
+      name:
+        type: string
+      products:
+        items:
+          $ref: '#/definitions/entity.ProductJournalData'
+        type: array
+      session_duration:
+        type: integer
+      session_step_percent:
+        type: number
+      start_price:
+        type: number
+    type: object
+  entity.QuotationSessionShort:
+    properties:
+      session_id:
+        type: integer
+      status:
+        type: string
+    type: object
+  response.AccountCreated:
+    properties:
+      account_id:
+        type: integer
+      msg:
+        type: string
+      profile_id:
+        type: integer
+    type: object
+  response.HealthStatus:
+    properties:
+      info:
+        type: string
+      status:
+        type: string
+    type: object
+  response.LoginResponse:
+    properties:
+      access_token:
+        type: string
+      refresh_token:
+        type: string
+    type: object
+  utils.HTTPError:
+    properties:
+      code:
+        example: 500
+        type: integer
+      message:
+        example: Internal error
+        type: string
+    type: object
+info:
+  contact:
+    email: support@swagger.io
+    name: API Support
+    url: http://www.swagger.io/support
+  description: Service to manage sessions and bets.
+  license:
+    name: Apache 2.0
+    url: http://www.apache.org/licenses/LICENSE-2.0.html
+  termsOfService: http://swagger.io/terms/
+  title: Tender Management Service API
+  version: "1.0"
+paths:
+  /api/v1/bets:
+    post:
+      consumes:
+      - application/json
+      description: Make new bet in a quotation session
+      parameters:
+      - description: Authentication header
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      - description: Bet info
+        in: body
+        name: bet
+        required: true
+        schema:
+          $ref: '#/definitions/entity.BetData'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: New bet successfully made
+          schema:
+            type: string
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/utils.HTTPError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/utils.HTTPError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/utils.HTTPError'
+      summary: Make new bet
+      tags:
+      - bets
+  /api/v1/bets/{sessionId}:
+    get:
+      consumes:
+      - application/json
+      description: Get bets history for a selected session
+      parameters:
+      - description: Authentication header
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      - description: Session id
+        in: path
+        name: sessionId
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/entity.Bet'
+            type: array
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/utils.HTTPError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/utils.HTTPError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/utils.HTTPError'
+      summary: Get bets by session Id
+      tags:
+      - bets
+  /api/v1/categories:
+    get:
+      consumes:
+      - application/json
+      description: Returns all the categories in system
+      parameters:
+      - description: Authentication header
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/entity.Category'
+            type: array
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/utils.HTTPError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/utils.HTTPError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/utils.HTTPError'
+      summary: Get categories
+      tags:
+      - categories
+    post:
+      consumes:
+      - application/json
+      description: Add new category and get entity with ID in a response
+      parameters:
+      - description: Authentication header
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      - description: Category info
+        in: body
+        name: category
+        required: true
+        schema:
+          $ref: '#/definitions/entity.CategoryData'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: New category successfully added
+          schema:
+            type: string
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/utils.HTTPError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/utils.HTTPError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/utils.HTTPError'
+      summary: Add new category
+      tags:
+      - categories
+  /api/v1/categories/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: Delete selected category
+      parameters:
+      - description: Authentication header
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      - description: Category ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Category deleted
+          schema:
+            type: string
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/utils.HTTPError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/utils.HTTPError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/utils.HTTPError'
+      summary: Delete category
+      tags:
+      - categories
+    get:
+      consumes:
+      - application/json
+      description: Returns category by ID
+      parameters:
+      - description: Authentication header
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      - description: Category ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/entity.Category'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/utils.HTTPError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/utils.HTTPError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/utils.HTTPError'
+      summary: Get category by ID
+      tags:
+      - categories
+    put:
+      consumes:
+      - application/json
+      description: Edit existing category
+      parameters:
+      - description: Authentication header
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      - description: Category ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Category entity
+        in: body
+        name: data
+        required: true
+        schema:
+          $ref: '#/definitions/entity.CategoryData'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Category updated
+          schema:
+            type: string
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/utils.HTTPError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/utils.HTTPError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/utils.HTTPError'
+      summary: Edit category
+      tags:
+      - categories
+  /api/v1/products:
+    get:
+      consumes:
+      - application/json
+      description: Returns all the products in system or products filtered using query
+      parameters:
+      - description: Authentication header
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      - description: search substring in name, description or category
+        in: query
+        name: query
+        type: string
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            items:
+              $ref: '#/definitions/entity.Product'
+            type: array
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/utils.HTTPError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/utils.HTTPError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/utils.HTTPError'
+      summary: Get products
+      tags:
+      - products
+    post:
+      consumes:
+      - application/json
+      description: Add new product and get entity with ID in a response
+      parameters:
+      - description: Authentication header
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      - description: Product info
+        in: body
+        name: product
+        required: true
+        schema:
+          $ref: '#/definitions/entity.ProductData'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: New product successfully added
+          schema:
+            type: string
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/utils.HTTPError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/utils.HTTPError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/utils.HTTPError'
+      summary: Add new product
+      tags:
+      - products
+  /api/v1/products/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: Delete selected product
+      parameters:
+      - description: Authentication header
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      - description: Account ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Product deleted
+          schema:
+            type: string
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/utils.HTTPError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/utils.HTTPError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/utils.HTTPError'
+      summary: Delete product
+      tags:
+      - products
+    get:
+      consumes:
+      - application/json
+      description: Returns product by ID
+      parameters:
+      - description: Authentication header
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      - description: Product ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/entity.Product'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/utils.HTTPError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/utils.HTTPError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/utils.HTTPError'
+      summary: Get product by ID
+      tags:
+      - products
+    put:
+      consumes:
+      - application/json
+      description: Edit existing product
+      parameters:
+      - description: Authentication header
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      - description: Product ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Product entity
+        in: body
+        name: data
+        required: true
+        schema:
+          $ref: '#/definitions/entity.ProductData'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Product updated
+          schema:
+            type: string
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/utils.HTTPError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/utils.HTTPError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/utils.HTTPError'
+      summary: Edit product
+      tags:
+      - products
+  /api/v1/profiles/{id}:
+    get:
+      consumes:
+      - application/json
+      description: Returns profile by ID
+      parameters:
+      - description: Authentication header
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      - description: Profile ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/entity.Profile'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/utils.HTTPError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/utils.HTTPError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/utils.HTTPError'
+      summary: Get profile by ID
+      tags:
+      - profiles
+    put:
+      consumes:
+      - application/json
+      description: Edit existing profile
+      parameters:
+      - description: Authentication header
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      - description: Profile ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Profile entity
+        in: body
+        name: data
+        required: true
+        schema:
+          $ref: '#/definitions/entity.ProfileData'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Profile updated
+          schema:
+            type: string
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/utils.HTTPError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/utils.HTTPError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/utils.HTTPError'
+      summary: Edit profile
+      tags:
+      - profiles
+  /api/v1/sessions:
+    get:
+      consumes:
+      - application/json
+      description: Returns all short sessions
+      parameters:
+      - description: Authentication header
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/entity.QuotationSessionShort'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/utils.HTTPError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/utils.HTTPError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/utils.HTTPError'
+      summary: Get all quotation sessions
+      tags:
+      - sessions
+    post:
+      consumes:
+      - application/json
+      description: Add new quotation session
+      parameters:
+      - description: Authentication header
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      - description: Session info
+        in: body
+        name: session
+        required: true
+        schema:
+          $ref: '#/definitions/entity.QuotationSessionData'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: New session successfully added
+          schema:
+            type: string
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/utils.HTTPError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/utils.HTTPError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/utils.HTTPError'
+      summary: Add new session
+      tags:
+      - sessions
+  /api/v1/sessions/{id}:
+    get:
+      consumes:
+      - application/json
+      description: Returns session by ID
+      parameters:
+      - description: Authentication header
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      - description: Session ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/entity.QuotationSession'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/utils.HTTPError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/utils.HTTPError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/utils.HTTPError'
+      summary: Get session by ID
+      tags:
+      - sessions
+  /health:
+    get:
+      consumes:
+      - application/json
+      description: Health status for services' components
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/response.HealthStatus'
+            type: array
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/utils.HTTPError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/utils.HTTPError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/utils.HTTPError'
+      summary: Get health
+      tags:
+      - health
+  /health/version:
+    get:
+      consumes:
+      - application/json
+      description: Current version of the service
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: string
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/utils.HTTPError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/utils.HTTPError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/utils.HTTPError'
+      summary: Get version
+      tags:
+      - health
+  /login:
+    post:
+      consumes:
+      - application/json
+      description: Login request, use to get access_token and refresh_token
+      parameters:
+      - description: Account info
+        in: body
+        name: info
+        required: true
+        schema:
+          $ref: '#/definitions/entity.AccountData'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Login
+          schema:
+            $ref: '#/definitions/response.LoginResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/utils.HTTPError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/utils.HTTPError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/utils.HTTPError'
+      summary: Login
+      tags:
+      - auth
+  /logout:
+    post:
+      consumes:
+      - application/json
+      description: Log out from account
+      parameters:
+      - description: Authentication header
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Logout
+          schema:
+            $ref: '#/definitions/response.AccountCreated'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/utils.HTTPError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/utils.HTTPError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/utils.HTTPError'
+      summary: Logout
+      tags:
+      - auth
+  /register:
+    post:
+      consumes:
+      - application/json
+      description: Add new account
+      parameters:
+      - description: Account info
+        in: body
+        name: info
+        required: true
+        schema:
+          $ref: '#/definitions/entity.AccountData'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Account and profile created
+          schema:
+            $ref: '#/definitions/response.AccountCreated'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/utils.HTTPError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/utils.HTTPError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/utils.HTTPError'
+      summary: Register
+      tags:
+      - auth
+securityDefinitions:
+  JWT:
+    type: basic
+swagger: "2.0"
