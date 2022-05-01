@@ -11,7 +11,7 @@ Functionality:
 - Usage of go-pg ORM
 - JWT authentication & authorization
 - Access control based on policy descriptor `basic_policy.csv`
-- Run background cron job to recalculate sessions' statuses
+
 
 To get the Swagger page go to: `/swagger/index.html`
 
